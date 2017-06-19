@@ -64,7 +64,7 @@ def undistort_chessboard(img_path, M, dist, out_img_dir=None):
     undistorted_img = undistort_img(img_path, M, dist)
 
     # build plot
-    fig, axes = plt.subplots(1, 2)
+    fig, axes = plt.subplots(1, 2, figsize=(5, 2))
 
     axes[0].imshow(distorted_image)
     axes[0].set_title('Distorted Image')
@@ -76,6 +76,8 @@ def undistort_chessboard(img_path, M, dist, out_img_dir=None):
         # save plot
         save_path = os.path.join(out_img_dir, 'undistort_chessboard.png')
         plt.savefig(save_path)
+    else:
+        plt.show()
 
 
 def main():
@@ -102,7 +104,7 @@ def main():
     undistort_img_dir(test_img_dir, M, dist, out_img_dir)
 
     # undistort a chessboard image
-    chessboard_path = os.path.join(cal_img_dir, 'calibration1.jpg')
+    chessboard_path = os.path.join(out_img_dir, 'calibration3.jpg')
     undistort_chessboard(chessboard_path, M, dist, out_img_dir)
 
 

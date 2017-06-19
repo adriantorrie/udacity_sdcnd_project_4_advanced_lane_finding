@@ -24,6 +24,7 @@ def save_pickle(obj, pickle_path):
     """
     with open(pickle_path, 'wb') as p:
         pickle.dump(obj, p)
+
     print('calibration dumped: {}'.format(pickle_path))
 
 
