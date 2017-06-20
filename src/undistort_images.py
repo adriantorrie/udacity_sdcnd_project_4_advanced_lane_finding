@@ -34,8 +34,9 @@ def undistort_img_dir(in_img_dir, M, dist, out_img_dir=None):
         Transparent overlays with OpenCV
          - http://www.pyimagesearch.com/2016/03/07/transparent-overlays-with-opencv/
     """
-    for path in glob.iglob(os.path.join(in_img_dir, '*test*.jpg')):
-        img = undistort_img(path, M, dist)
+    for path in glob.iglob(os.path.join(in_img_dir, '*.jpg')):
+        img = cv2.imread(path)
+        img = undistort_img(img, M, dist)
 
         # save and show image if requested
         if out_img_dir:
@@ -61,7 +62,7 @@ def undistort_chessboard(img_path, M, dist, out_img_dir=None):
     """
     # set images
     distorted_image = cv2.imread(img_path)
-    undistorted_img = undistort_img(img_path, M, dist)
+    undistorted_img = undistort_img(distorted_image.copy(), M, dist)
 
     # build plot
     fig, axes = plt.subplots(1, 2, figsize=(5, 2))
@@ -80,7 +81,7 @@ def undistort_chessboard(img_path, M, dist, out_img_dir=None):
         plt.show()
 
 
-def main():
+def undistort_images():
     """Executed when script file is called directly"""
     # get env vars
     load_dotenv(find_dotenv())
@@ -110,4 +111,4 @@ def main():
 
 if __name__ == "__main__":
     # run if called directly
-    main()
+    undistort_images()
