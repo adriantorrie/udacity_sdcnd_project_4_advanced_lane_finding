@@ -1,38 +1,66 @@
-import pipeline
+import argparse
+import cv2
+import os.path
+import pickle
 
-class Line():
-    """Receives the characteristics of each line detection"""
-    def __init__(self):
-        # was the line detected in the last iteration?
-        self.detected = False
-        # x values of the last n fits of the line
-        self.recent_xfitted = []
-        #average x values of the fitted line over the last n iterations
-        self.bestx = None
-        #polynomial coefficients averaged over the last n iterations
-        self.best_fit = None
-        #polynomial coefficients for the most recent fit
-        self.current_fit = [np.array([False])]
-        #radius of curvature of the line in some units
-        self.radius_of_curvature = None
-        #distance in meters of vehicle center from the line
-        self.line_base_pos = None
-        #difference in fit coefficients between last and new fits
-        self.diffs = np.array([0,0,0], dtype='float')
-        #x values for detected line pixels
-        self.allx = None
-        #y values for detected line pixels
-        self.ally = None
+from pipeline import Lane, get_perspective_matrices, run_pipeline
 
-def main():
-    left_lane = Line()
-    right_lane = Line()
-    img_width_x = 1280
-    img_height_y = 720
 
-    img = run_pipeline(img)
+def main(args):
+    # parse args
+    source_path = args.s
+    calibration = pickle.load( open(args.c, 'rb'))
+    output_path = args.o
+    img_width_x = args.w
+    img_height_y = args.y
+
+    # check file exists before processing
+    if os.path.isfile(source_path):
+        # locals
+        M = calibration['M']
+        dist = calibration['dist']
+        left_lane = Lane()
+        right_lane = Lane()
+        pers, pers_inv = get_perspective_matrices()
+        codec = cv2.VideoWriter_fourcc(*'XVID')
+        out = cv2.VideoWriter(output_path, codec, 20.0,
+                              (img_height_y, img_width_x))
+
+        # process video
+        cap = cv2.VideoCapture(source_path)
+        while (cap.isOpened()):
+            ret, frame = cap.read()
+
+            # new frame found
+            if ret == True:
+                # annotate frame and write to file
+                frame = pipeline(frame, M, dist, pers, pers_inv, left_lane,
+                                 right_lane)
+                out.write(frame)
+
+                # display annotated frame to screen
+                cv2.imshow('frame', frame)
+                if cv2.waitKey(1) & 0xFF == ord('q'):
+                    break
+            else:
+                break
+
+        # release everything if job is finished
+        cap.release()
+        out.release()
+        cv2.destroyAllWindows()
+    else:
+        print('Source file not found')
 
 
 if __name__ == "__main__":
-    # run if called directly
-    main()
+    # set args
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-s', help='path to source file', required=True)
+    parser.add_argument('-c', help='path to pickled calibration', required=True)
+    parser.add_argument('-o', help='path to output file', required=True)
+    parser.add_argument('-y', help='height of video', required=True)
+    parser.add_argument('-x', help='width of video', required=True)
+
+    # run
+    main(parser.parse_args())
